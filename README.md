@@ -14,7 +14,7 @@ source activate tne
 ```
 3. Install all the required modules.
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 
@@ -25,3 +25,7 @@ pip install -r requirements.txt
 python run.py --graph_path ./datasets/karate.gml --random_walk deepwalk --n 80 --l 10 --k 2 --community_detection_method lda --negative 5 --output_folder ./outputs --concat_method max
 ```
 
+The detailed list of commands can be seen by typing
+```
+python run.py -h
+```
