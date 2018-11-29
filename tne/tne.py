@@ -368,16 +368,16 @@ class TNE:
             if not os.path.exists(temp_bigclam_folder):
                 os.makedirs(temp_bigclam_folder)
 
-            g = nx.Graph()
-            g.add_edge(2, 3)
-            print("graph {}".format([g.copy()]))
+            #g = nx.Graph()
+            #g.add_edge(2, 3)
+            #print("graph {}".format([g.copy()]))
             # Get all connected components
             cc_list = np.asarray(list(nx.connected_component_subgraphs(self.graph)))
             num_of_cc = cc_list.shape[0]
             print("graph {}".format([self.graph.copy()]))
             if num_of_cc == 1:
                 cc_list = [self.graph.copy()]
-            print(cc_list)
+            #print(cc_list)
             print("Number of connected components: {}".format(num_of_cc))
             cc_sizes = [cc.number_of_nodes() for cc in cc_list]
             # Sort the connected components
