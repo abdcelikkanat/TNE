@@ -271,7 +271,6 @@ class TNE:
                 seq = []
 
                 for w in walk:
-                    #seq.append(self.number_of_nodes+np.random.choice(self.number_of_communities))
                     seq.append(int(w))
 
                 y.append(seq)
@@ -322,9 +321,6 @@ class TNE:
                 # Observe a random mini-batch
                 subset = np.random.choice(a=N, size=hmm_subset_size)
 
-                # print(subsets)
-                # print()
-                # print(subsets[subset])
                 Q['X'].observe([y[inx] for inx in subset])
                 # Learn intermediate variables
                 Q.update('Z')
@@ -335,26 +331,10 @@ class TNE:
 
             likelihood = Q['E'].random()
 
-            qp = p.random()
-            qT = T.random()
-            qE = E.random()
-
-            self.topic_corpus = []
-
-            model = hmm.MultinomialHMM(n_components=self.number_of_communities, tol=0.001, n_iter=5000)
-            model.startprob_ = qp
-            model.emissionprob_ = qE
-            model.transmat_ = qT
-
-            initial_time = time.time()
-            seq_for_hmmlearn = np.concatenate([np.asarray(seq).reshape(-1, 1).tolist() for seq in y])
-            seq_lens = [self.params['walk_length'] for _ in range(N)]
-            comm_conc_seq = model.predict(seq_for_hmmlearn, seq_lens)
-            print("The hidden states are predicted in {} secs.".format(time.time() - initial_time))
-
             self.topic_corpus = []
             for i in range(N):
-                self.topic_corpus.append([str(w) for w in comm_conc_seq[i*L:(i+1)*L]])
+                print(x.parents[1].get_moments())
+                self.topic_corpus.append(np.argmax(x.parents[0].get_moments()[0][i], axis=1))
 
             return likelihood
 
