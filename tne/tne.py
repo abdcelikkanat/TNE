@@ -1,5 +1,9 @@
+import os
 import sys
+import time
+import numpy as np
 import networkx as nx
+from settings import *
 from utils.utils import *
 from ext.gensim_wrapper.models.word2vec import Word2VecWrapper
 from gensim.utils import smart_open
@@ -329,12 +333,33 @@ class TNE:
                 # Stochastic gradient for the global variables
                 Q.gradient_step('p', 'T', 'E', scale=step)
 
-            likelihood = Q['E'].random()
+
+
+            qp_temp = p.get_parameters()[0]
+            qp = qp_temp / np.sum(qp_temp)
+            qT_temp = np.asarray(T.get_parameters())[0]
+            qT = np.asarray(qT_temp.T / np.sum(qT_temp, 1)).T
+            qE_temp = np.asarray(E.get_parameters()[0])
+            qE = np.asarray(qE_temp.T / np.sum(qE_temp, 1)).T
+
+            likelihood = qE
+
+            self.topic_corpus = []
+
+            model = hmm.MultinomialHMM(n_components=self.number_of_communities, tol=0.001, n_iter=5000)
+            model.startprob_ = qp
+            model.emissionprob_ = qE
+            model.transmat_ = qT
+
+            initial_time = time.time()
+            seq_for_hmmlearn = np.concatenate([np.asarray(seq).reshape(-1, 1).tolist() for seq in y])
+            seq_lens = [self.params['walk_length'] for _ in range(N)]
+            comm_conc_seq = model.predict(seq_for_hmmlearn, seq_lens)
+            print("The hidden states are predicted in {} secs.".format(time.time() - initial_time))
 
             self.topic_corpus = []
             for i in range(N):
-                print(x.parents[1].get_moments())
-                self.topic_corpus.append(np.argmax(x.parents[0].get_moments()[0][i], axis=1))
+                self.topic_corpus.append([str(w) for w in comm_conc_seq[i*L:(i+1)*L]])
 
             return likelihood
 
