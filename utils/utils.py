@@ -8,7 +8,6 @@ import time
 import os
 from settings import *
 
-
 def find_topics_for_nodes(phi_file, id2node, number_of_topics, type):
 
     number_of_nodes = len(id2node)

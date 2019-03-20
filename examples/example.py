@@ -1,12 +1,12 @@
 from os.path import basename, splitext, join
-from utils.utils import *
 from tne.tne import TNE
+from utils.utils import *
 import time
 from settings import *
 
 
 dataset_folder = os.path.join(BASE_FOLDER, 'datasets')
-dataset_file = "karate.gml"
+dataset_file = "citeseer.gml"
 
 
 # Set all parameters #
