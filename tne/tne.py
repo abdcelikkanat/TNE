@@ -162,10 +162,10 @@ class TNE:
         id2comm = np.argmax(phi, axis=0)
         node2comm = {id2node[nodeId]: id2comm[nodeId] for nodeId in range(len(id2comm))}
         with open(embedding_file_path, 'w') as f:
-            f.write("{} {}\n".format(len(self.model.wv.vocab), self.model.wv.syn0.shape[1] + self.model.wv.syn0_community.shape[1]))
+            f.write("{} {}\n".format(len(self.model.wv.vocab), self.model.wv.syn0.shape[1] + self.model_community.wv.syn0_community.shape[1]))
             # store in sorted order: most frequent words at the top
             for word, vocab in sorted(iteritems(self.model.wv.vocab), key=lambda item: -item[1].count):
-                row = np.concatenate((self.model.wv.syn0[vocab.index], self.model.wv.syn0_community[node2comm[word]]))
+                row = np.concatenate((self.model.wv.syn0[vocab.index], self.model_community.wv.syn0_community[node2comm[word]]))
                 f.write("{} {}\n".format(word, ' '.join(str(val) for val in row)))
 
     def _create_temp_folder(self, folder_path):
