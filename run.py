@@ -7,97 +7,97 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from random_walks import *
 from tne import *
 
-def process_old(args):
-
-    nx_graph_path = args.graph_path
-    outputs_folder = args.output_folder
-
-    # Set the parameters
-    params = {}
-    # The method name
-    params['random_walk'] = args.random_walk
-    # Common parameters
-    params['number_of_walks'] = args.n
-    params['walk_length'] = args.l
-    params['embedding_size'] = args.d
-    params['number_of_communities'] = args.k
-    params['community_detection_method'] = args.community_detection_method
-    # Parameters for Deepwalk
-    params['dw_alpha'] = args.dw_alpha
-    # Parameters for Node2vec
-    params['n2v_p'] = args.n2v_p
-    params['n2v_q'] = args.n2v_q
-    # Parameters for Skip-Gram
-    params['hs'] = args.hs
-    params['negative'] = args.negative
-    params['window_size'] = args.w
-    # Parameters for LDA
-    params['lda_alpha'] = float(50.0 / params['number_of_communities']) if args.lda_alpha == -1.0 else args.lda_alpha
-    params['lda_beta'] = args.lda_beta
-    params['lda_number_of_iters'] = args.lda_iter_num
-    params['concat_method'] = args.concat_method
-    # Parameters for HMM
-    params['hmm_p0'] = args.hmm_p0
-    params['hmm_t0'] = args.hmm_t0
-    params['hmm_e0'] = args.hmm_e0
-    params['hmm_number_of_iters'] = args.hmm_number_of_iters
-    params['hmm_subset_size'] = args.hmm_subset_size
-
-    graph_name = splitext(basename(nx_graph_path))[0]
-
-    file_desc = "{}_{}_n{}_l{}_w{}_k{}_{}".format(graph_name,
-                                                  params['community_detection_method'],
-                                                  params['number_of_walks'],
-                                                  params['walk_length'],
-                                                  params['window_size'],
-                                                  params['number_of_communities'],
-                                                  params['random_walk'])
-
-    if params['random_walk'] == 'node2vec':
-        file_desc += "_p={}_q={}".format(params['n2v_p'], params['n2v_q'])
-
-    # temp folder
-    temp_folder = os.path.join(outputs_folder, "temp", file_desc)
-    if not os.path.exists(temp_folder):
-        os.makedirs(temp_folder)
-
-    # output folder
-    embedding_folder = os.path.join(outputs_folder, "embeddings", file_desc)
-    if not os.path.exists(embedding_folder):
-        os.makedirs(embedding_folder)
-
-    # Determine the paths of embedding files
-    node_embedding_file = join(embedding_folder, "{}_node.embedding".format(file_desc))
-    community_embedding_file = join(embedding_folder, "{}_community.embedding".format(file_desc))
-
-    concatenated_embedding_file = dict()
-    concatenated_embedding_file['max'] = join(embedding_folder, "{}_final_max.embedding".format(file_desc))
-    concatenated_embedding_file['wmean'] = join(embedding_folder, "{}_final_wmean.embedding".format(file_desc))
-    concatenated_embedding_file['min'] = join(embedding_folder, "{}_final_min.embedding".format(file_desc))
-
-    # The path for the corpus
-    corpus_path_for_node = join(temp_folder, "{}_node.corpus".format(file_desc))
-
-    tne = TNE(nx_graph_path, temp_folder, params)
-    tne.perform_random_walks(output_node_corpus_file=corpus_path_for_node)
-    tne.preprocess_corpus(process="equalize")
-    phi = tne.generate_community_corpus(method=params['community_detection_method'])
-
-    tne.learn_node_embedding(output_node_embedding_file=node_embedding_file)
-    tne.learn_topic_embedding(output_topic_embedding_file=community_embedding_file)
-
-    # Compute the corresponding communities for each node
-    for embedding_strategy in ["max", "min", "wmean"]:
-        if params['concat_method'] == embedding_strategy or params['concat_method'] == "all":
-            initial_time = time.time()
-            # Concatenate the embeddings
-            concatenate_embeddings(node_embedding_file=node_embedding_file,
-                                   topic_embedding_file=community_embedding_file,
-                                   phi=phi,
-                                   method=embedding_strategy,
-                                   output_filename=concatenated_embedding_file[embedding_strategy])
-            print("-> The {} embeddings were generated and saved in {:.2f} secs | {}".format(
-                embedding_strategy, (time.time() - initial_time), concatenated_embedding_file[embedding_strategy]))
+# def process_old(args):
+#
+#     nx_graph_path = args.graph_path
+#     outputs_folder = args.output_folder
+#
+#     # Set the parameters
+#     params = {}
+#     # The method name
+#     params['random_walk'] = args.random_walk
+#     # Common parameters
+#     params['number_of_walks'] = args.n
+#     params['walk_length'] = args.l
+#     params['embedding_size'] = args.d
+#     params['number_of_communities'] = args.k
+#     params['community_detection_method'] = args.community_detection_method
+#     # Parameters for Deepwalk
+#     params['dw_alpha'] = args.dw_alpha
+#     # Parameters for Node2vec
+#     params['n2v_p'] = args.n2v_p
+#     params['n2v_q'] = args.n2v_q
+#     # Parameters for Skip-Gram
+#     params['hs'] = args.hs
+#     params['negative'] = args.negative
+#     params['window_size'] = args.w
+#     # Parameters for LDA
+#     params['lda_alpha'] = float(50.0 / params['number_of_communities']) if args.lda_alpha == -1.0 else args.lda_alpha
+#     params['lda_beta'] = args.lda_beta
+#     params['lda_number_of_iters'] = args.lda_iter_num
+#     params['concat_method'] = args.concat_method
+#     # Parameters for HMM
+#     params['hmm_p0'] = args.hmm_p0
+#     params['hmm_t0'] = args.hmm_t0
+#     params['hmm_e0'] = args.hmm_e0
+#     params['hmm_number_of_iters'] = args.hmm_number_of_iters
+#     params['hmm_subset_size'] = args.hmm_subset_size
+#
+#     graph_name = splitext(basename(nx_graph_path))[0]
+#
+#     file_desc = "{}_{}_n{}_l{}_w{}_k{}_{}".format(graph_name,
+#                                                   params['community_detection_method'],
+#                                                   params['number_of_walks'],
+#                                                   params['walk_length'],
+#                                                   params['window_size'],
+#                                                   params['number_of_communities'],
+#                                                   params['random_walk'])
+#
+#     if params['random_walk'] == 'node2vec':
+#         file_desc += "_p={}_q={}".format(params['n2v_p'], params['n2v_q'])
+#
+#     # temp folder
+#     temp_folder = os.path.join(outputs_folder, "temp", file_desc)
+#     if not os.path.exists(temp_folder):
+#         os.makedirs(temp_folder)
+#
+#     # output folder
+#     embedding_folder = os.path.join(outputs_folder, "embeddings", file_desc)
+#     if not os.path.exists(embedding_folder):
+#         os.makedirs(embedding_folder)
+#
+#     # Determine the paths of embedding files
+#     node_embedding_file = join(embedding_folder, "{}_node.embedding".format(file_desc))
+#     community_embedding_file = join(embedding_folder, "{}_community.embedding".format(file_desc))
+#
+#     concatenated_embedding_file = dict()
+#     concatenated_embedding_file['max'] = join(embedding_folder, "{}_final_max.embedding".format(file_desc))
+#     concatenated_embedding_file['wmean'] = join(embedding_folder, "{}_final_wmean.embedding".format(file_desc))
+#     concatenated_embedding_file['min'] = join(embedding_folder, "{}_final_min.embedding".format(file_desc))
+#
+#     # The path for the corpus
+#     corpus_path_for_node = join(temp_folder, "{}_node.corpus".format(file_desc))
+#
+#     tne = TNE(nx_graph_path, temp_folder, params)
+#     tne.perform_random_walks(output_node_corpus_file=corpus_path_for_node)
+#     tne.preprocess_corpus(process="equalize")
+#     phi = tne.generate_community_corpus(method=params['community_detection_method'])
+#
+#     tne.learn_node_embedding(output_node_embedding_file=node_embedding_file)
+#     tne.learn_topic_embedding(output_topic_embedding_file=community_embedding_file)
+#
+#     # Compute the corresponding communities for each node
+#     for embedding_strategy in ["max", "min", "wmean"]:
+#         if params['concat_method'] == embedding_strategy or params['concat_method'] == "all":
+#             initial_time = time.time()
+#             # Concatenate the embeddings
+#             concatenate_embeddings(node_embedding_file=node_embedding_file,
+#                                    topic_embedding_file=community_embedding_file,
+#                                    phi=phi,
+#                                    method=embedding_strategy,
+#                                    output_filename=concatenated_embedding_file[embedding_strategy])
+#             print("-> The {} embeddings were generated and saved in {:.2f} secs | {}".format(
+#                 embedding_strategy, (time.time() - initial_time), concatenated_embedding_file[embedding_strategy]))
 
 
 def process(args):
@@ -125,10 +125,11 @@ def process(args):
         tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.embedding_size,
                                   negative_samples_count=args.negative_samples, workers_count=args.workers)
         tne.write_node_embeddings("./node_prev.embedding")
-        tne.learn_community_embeddings()
+        tne.learn_community_embeddings(args.community_embed_size)
         tne.write_node_embeddings("./node.embedding")
         tne.write_community_embeddings("./community.embedding")
         tne.write_embeddings(embedding_file_path=args.output, phi=phi, id2node=id2node)
+
 
 def parse_arguments():
     parser = ArgumentParser(description="TNE: A Latent Model for Representation Learning on Networks",
@@ -163,6 +164,8 @@ def parse_arguments():
                                          help='The number of latent communities')
     learn_embeddings_parser.add_argument('--embedding_size', type=int, required=False, default=128,
                                          help='The embedding size')
+    learn_embeddings_parser.add_argument('--community_embed_size', type=int, required=False, default=128,
+                                         help='Community embedding size')
     learn_embeddings_parser.add_argument('--window_size', type=int, required=False, default=10,
                                          help='The window size')
     learn_embeddings_parser.add_argument('--negative_samples', type=int, required=False, default=5,

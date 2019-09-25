@@ -17,6 +17,7 @@ class TNE:
     community_walks = None
     suffix_for_files = ""
     model = None
+    model_community = None
 
     def __init__(self, K, walks=None, suffix_for_files=None):
 
@@ -134,7 +135,7 @@ class TNE:
         # Write node embeddings
         self.model.wv.save_word2vec_format(fname=embedding_file_path)
 
-    def learn_community_embeddings(self):
+    def learn_community_embeddings(self, community_embed_size):
 
         if len(self.walks) == 0:
             raise ValueError("There is no walk to learn embedding vectors!")
@@ -146,12 +147,15 @@ class TNE:
         # Construct the tuples (word, topic) with each word in the corpus and its corresponding topic assignment
         combined_walks = CombineSentences(node_walks=self.walks, community_walks=self.community_walks)
         # Extract the topic embeddings
-        self.model.train_community(self.K, combined_walks)
+        self.model_community = Word2VecWrapper(size=community_embed_size,
+                                               window=10, sg=1, hs=0, negative=5,
+                                               workers=1, min_count=0)
+        self.model_community.train_community(self.K, combined_walks)
         print("The community embeddings were generated in {:.2f} secs.".format(time.time() - initial_time))
 
     def write_community_embeddings(self, embedding_file_path):
         # Save the topic embeddings
-        self.model.wv.save_word2vec_community_format(fname=embedding_file_path)
+        self.model_community.wv.save_word2vec_community_format(fname=embedding_file_path)
 
     def write_embeddings(self, embedding_file_path, phi, id2node):
 
