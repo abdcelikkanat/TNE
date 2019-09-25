@@ -30,10 +30,8 @@ class Word2VecWrapper(Word2Vec):
     def train_community(self, number_of_communities, sentences, total_examples=None, total_words=None,
                     epochs=None, start_alpha=None, end_alpha=None,
                     word_count=0,
-                    queue_factor=2, report_delay=1.0, compute_loss=None, embedding_size=None):
+                    queue_factor=2, report_delay=1.0, compute_loss=None):
 
-        if isinstance(embedding_size, int):
-            self.community_vector_size = embedding_size
         total_examples = self.corpus_count
         epochs = self.iter
         self.reset_community_weights(number_of_communities)
@@ -252,21 +250,15 @@ class Word2VecWrapper(Word2Vec):
     def reset_community_weights(self, number_of_communities):
         """Reset all projection weights to an initial (untrained) state, but keep the existing vocabulary."""
         logger.info("resetting layer weights")
-        self.wv.syn0_community = empty((number_of_communities, self.community_vector_size), dtype=REAL)
+        self.wv.syn0_community = empty((number_of_communities, self.vector_size), dtype=REAL)
         # randomize weights vector by vector, rather than materializing a huge random matrix in RAM at once
         #for i in xrange(len(self.wv.vocab)):
         for i in xrange(number_of_communities):
             # construct deterministic seed from word AND seed argument
-            self.wv.syn0_community[i] = self.seeded_vector_community(self.wv.index2word[i] + str(self.seed))
+            self.wv.syn0_community[i] = self.seeded_vector(self.wv.index2word[i] + str(self.seed))
 
         self.wv.syn0norm_community = None
         self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
-
-    def seeded_vector_community(self, seed_string):
-        """Create one 'random' vector (but deterministic by seed_string)"""
-        # Note: built-in hash() may vary by Python version or even (in Py3.x) per launch
-        once = random.RandomState(self.hashfxn(seed_string) & 0xffffffff)
-        return (once.rand(self.community_vector_size) - 0.5) / self.community_vector_size
 
     def initialize_word_vectors(self):
         self.wv = KeyedVectorsWrapper()
