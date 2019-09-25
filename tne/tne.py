@@ -147,7 +147,7 @@ class TNE:
         # Construct the tuples (word, topic) with each word in the corpus and its corresponding topic assignment
         combined_walks = CombineSentences(node_walks=self.walks, community_walks=self.community_walks)
         # Extract the topic embeddings
-        self.model_community = Word2VecWrapper(size=community_embed_size,
+        self.model_community = Word2VecWrapper(sentences=self.walks, size=community_embed_size,
                                                window=10, sg=1, hs=0, negative=5,
                                                workers=1, min_count=0)
         self.model_community.train_community(self.K, combined_walks)
