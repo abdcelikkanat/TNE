@@ -155,17 +155,6 @@ class TNE:
 
     def write_embeddings(self, embedding_file_path, phi, id2node):
 
-        def _combine_embeddings(node_embs, community_embs, num_of_nodes, num_of_communities, embedding_size):
-            node_comm_emb = np.zeros(shape=(num_of_nodes, num_of_communities, embedding_size), dtype=np.float)
-            for
-
-            return node2comm
-
-        _combine_embeddings(node_embs=self.model.wv.syn0, self.model.wv.syn0_community)
-
-
-
-
         id2comm = np.argmax(phi, axis=0)
         node2comm = {id2node[nodeId]: id2comm[nodeId] for nodeId in range(len(id2comm))}
         with open(embedding_file_path, 'w') as f:
