@@ -1,6 +1,6 @@
 from os.path import basename, splitext, join
 from utils.utils import *
-from tne.tne import TNE
+from tne.tne2 import TNE
 import time
 from settings import *
 

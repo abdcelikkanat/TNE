@@ -408,12 +408,12 @@ def get_node_distr_over_comm(g, walks, method=None, params={}):
 
 class CombineSentences(object):
 
-    def __init__(self, node_corpus, comm_corpus):
-        self.node_corpus = node_corpus
-        self.comm_corpus = comm_corpus
+    def __init__(self, node_walks, community_walks):
+        assert len(node_walks) == len(community_walks), "Node and community corpus sizes must be equal!"
 
-        assert len(node_corpus) == len(comm_corpus), "Node and topic corpus sizes must be equal!"
+        self.node_walks = node_walks
+        self.community_walks = community_walks
 
     def __iter__(self):
-        for node_walk, comm_walk in zip(self.node_corpus, self.comm_corpus):
+        for node_walk, comm_walk in zip(self.node_walks, self.community_walks):
             yield [(v, int(t)) for (v, t) in zip(node_walk, comm_walk)]

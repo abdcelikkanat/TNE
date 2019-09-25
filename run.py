@@ -1,12 +1,13 @@
 import os
 from os.path import basename, splitext, join
-from tne.tne import TNE
+#from tne.tne2 import TNE
 from utils.utils import *
 import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from random_walks import *
+from tne import *
 
-
-def process(args):
+def process_old(args):
 
     nx_graph_path = args.graph_path
     outputs_folder = args.output_folder
@@ -99,9 +100,84 @@ def process(args):
                 embedding_strategy, (time.time() - initial_time), concatenated_embedding_file[embedding_strategy]))
 
 
+def process(args):
+
+    if args.task == "generate_walks":
+
+        ext = os.path.splitext(args.graph)[1]
+        if ext == '.gml':
+            g = nx.read_gml(args.graph)
+        elif ext == ".edgelist":
+            g = nx.read_edgelist(args.graph_path, create_using=nx.Graph())
+        else:
+            raise ValueError("Invalid graph extension! {}".format(ext))
+
+        opts = {'dw_alpha': args.dw_alpha, 'n2v_p': args.n2v_p, 'n2v_q': args.n2v_q}
+        rw = RandomWalks(g=g, strategy_name=args.strategy, N=args.N, L=args.L, opts=opts)
+        rw.write_walks(args.output)
+
+    if args.task == "learn_embeddings":
+
+        tne = TNE(K=args.K, suffix_for_files="deneme")
+        tne.read_corpus_file(corpus_path=args.corpus)
+        params = {'lda_alpha': args.lda_alpha, 'lda_beta': args.lda_beta, 'lda_iter_num': args.lda_iter_num}
+        phi, id2node = tne.extract_community_labels(community_detection_method=args.comm_method, params=params)
+        tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.embedding_size,
+                                  negative_samples_count=args.negative_samples, workers_count=args.workers)
+        tne.learn_community_embeddings()
+        tne.write_node_embeddings("./node.embedding")
+        tne.write_community_embeddings("./community.embedding")
+        tne.write_embeddings(embedding_file_path=args.output, phi=phi, id2node=id2node)
+
 def parse_arguments():
     parser = ArgumentParser(description="TNE: A Latent Model for Representation Learning on Networks",
                             formatter_class=ArgumentDefaultsHelpFormatter)
+
+    subparsers = parser.add_subparsers(help='The task name', dest="task")
+
+    generate_walks_parser = subparsers.add_parser('generate_walks')
+    generate_walks_parser.add_argument('--graph', type=str, required=True,
+                                        help='The path of graph file')
+    generate_walks_parser.add_argument('--strategy', type=str, required=True,
+                                       help='Random walk strategy', choices=['deepwalk', 'node2vec'])
+    generate_walks_parser.add_argument('--N', type=int, required=True,
+                                         help='The number of walks')
+    generate_walks_parser.add_argument('--L', type=int, required=True,
+                                         help='The length of walks')
+    generate_walks_parser.add_argument('--output', type=str, required=True,
+                                        help='The path of the corpus file')
+    generate_walks_parser.add_argument('--dw_alpha', type=float, required=False, default=0.0,
+                                       help='The value of the parameter alpha of deepwalk')
+    generate_walks_parser.add_argument('--n2v_p', type=float, required=False, default=1.0,
+                                       help='The value of the parameter p of node2vec')
+    generate_walks_parser.add_argument('--n2v_q', type=float, required=False, default=1.0,
+                                       help='The value of the parameter q of node2vec')
+
+    learn_embeddings_parser = subparsers.add_parser('learn_embeddings')
+    learn_embeddings_parser.add_argument('--corpus', type=str, required=True,
+                                         help='The path of the corpus file')
+    learn_embeddings_parser.add_argument('--comm_method', type=str, required=True, choices=['lda', 'hmm', 'bigclam', 'louvain'],
+                                         help='The community detection method')
+    learn_embeddings_parser.add_argument('--K', type=int, required=True,
+                                         help='The number of latent communities')
+    learn_embeddings_parser.add_argument('--embedding_size', type=int, required=False, default=128,
+                                         help='The embedding size')
+    learn_embeddings_parser.add_argument('--window_size', type=int, required=False, default=10,
+                                         help='The window size')
+    learn_embeddings_parser.add_argument('--negative_samples', type=int, required=False, default=5,
+                                         help='The number of negative samples')
+    learn_embeddings_parser.add_argument('--workers', type=int, required=False, default=1,
+                                         help='The number of workers')
+    learn_embeddings_parser.add_argument('--output', type=str, required=True,
+                                         help='The path of the embedding file')
+    learn_embeddings_parser.add_argument('--lda_alpha', type=float, required=False, default=0.1,
+                                         help='The value of the parameter alpha of LDA')
+    learn_embeddings_parser.add_argument('--lda_beta', type=float, required=False, default=0.1,
+                                         help='The value of the parameter beta of LDA')
+    learn_embeddings_parser.add_argument('--lda_iter_num', type=int, required=False, default=1000,
+                                         help='The number of iterations for LDA algorithm, GibssLDA++')
+
+    '''
     parser.add_argument('--graph_path', type=str, required=True,
                         help='The path for networkx graph')
     parser.add_argument('--output_folder', type=str, required=True,
@@ -148,7 +224,7 @@ def parse_arguments():
                         help = 'The subset size for HMM')
     parser.add_argument('--concat_method', type=str, default='all',
                         help='Specifies the method for concatenating node and community embeddings')
-
+    '''
     return parser.parse_args()
 
 

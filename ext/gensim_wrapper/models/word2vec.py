@@ -9,7 +9,7 @@ try:
 
     pyximport.install(setup_args={"include_dirs": [models_dir, get_include()]})
     #import pyximport; pyximport.install()
-    from ext.gensim_wrapper.models.word2vec_inner import train_batch_sg_topic
+    from ext.gensim_wrapper.models.word2vec_inner import train_batch_sg_community
 except ImportError:
     raise ValueError("An error occurred while loading the optimized version!")
 
@@ -27,14 +27,14 @@ class Word2VecWrapper(Word2Vec):
                                               sg, hs, negative, cbow_mean, hashfxn, iter, null_word,
                                               trim_rule, sorted_vocab, batch_words, compute_loss)
 
-    def train_topic(self, number_of_topic, sentences, total_examples=None, total_words=None,
+    def train_community(self, number_of_communities, sentences, total_examples=None, total_words=None,
                     epochs=None, start_alpha=None, end_alpha=None,
                     word_count=0,
                     queue_factor=2, report_delay=1.0, compute_loss=None):
 
         total_examples = self.corpus_count
         epochs = self.iter
-        self.reset_topic_weights(number_of_topic)
+        self.reset_community_weights(number_of_communities)
 
         if (self.model_trimmed_post_training):
             raise RuntimeError("Parameters for training were discarded using model_trimmed_post_training method")
@@ -59,7 +59,7 @@ class Word2VecWrapper(Word2Vec):
 
         if not self.wv.vocab:
             raise RuntimeError("you must first build vocabulary before training the model")
-        if not len(self.wv.syn0_topic):
+        if not len(self.wv.syn0_community):
             raise RuntimeError("you must first finalize vocabulary before training the model")
 
         if not hasattr(self, 'corpus_count'):
@@ -93,7 +93,7 @@ class Word2VecWrapper(Word2Vec):
                     progress_queue.put(None)
                     break  # no more jobs => quit this worker
                 sentences, alpha = job
-                tally, raw_tally = self._do_train_topic_job(sentences, alpha, (work, neu1))
+                tally, raw_tally = self._do_train_community_job(sentences, alpha, (work, neu1))
                 progress_queue.put((len(sentences), tally, raw_tally))  # report back progress
                 jobs_processed += 1
             logger.debug("worker exiting, processed %i jobs", jobs_processed)
@@ -233,7 +233,7 @@ class Word2VecWrapper(Word2Vec):
         self.clear_sims()
         return trained_word_count
 
-    def _do_train_topic_job(self, sentences, alpha, inits):
+    def _do_train_community_job(self, sentences, alpha, inits):
         """
         Train a single batch of sentences. Return 2-tuple `(effective word count after
         ignoring unknown words and sentence length trimming, total word count)`.
@@ -241,38 +241,24 @@ class Word2VecWrapper(Word2Vec):
         work, neu1 = inits
         tally = 0
         if self.sg:
-            tally += train_batch_sg_topic(self, sentences, alpha, work, self.compute_loss)
+            tally += train_batch_sg_community(self, sentences, alpha, work, self.compute_loss)
         else:
             raise ValueError("It has not been implemented for CBOW!")
             #tally += train_batch_cbow_topic(self, sentences, alpha, work, neu1, self.compute_loss)
         return tally, self._raw_word_count(sentences)
 
-    def reset_topic_weights(self, number_of_topics):
+    def reset_community_weights(self, number_of_communities):
         """Reset all projection weights to an initial (untrained) state, but keep the existing vocabulary."""
         logger.info("resetting layer weights")
-        self.wv.syn0_topic = empty((number_of_topics, self.vector_size), dtype=REAL)
+        self.wv.syn0_community = empty((number_of_communities, self.vector_size), dtype=REAL)
         # randomize weights vector by vector, rather than materializing a huge random matrix in RAM at once
         #for i in xrange(len(self.wv.vocab)):
-        for i in xrange(number_of_topics):
+        for i in xrange(number_of_communities):
             # construct deterministic seed from word AND seed argument
-            self.wv.syn0_topic[i] = self.seeded_vector(self.wv.index2word[i] + str(self.seed))
+            self.wv.syn0_community[i] = self.seeded_vector(self.wv.index2word[i] + str(self.seed))
 
-        self.wv.syn0norm_topic = None
-        self.syn0_lockf_topic = ones(number_of_topics, dtype=REAL)  # zeros suppress learning
+        self.wv.syn0norm_community = None
+        self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
 
     def initialize_word_vectors(self):
         self.wv = KeyedVectorsWrapper()
-
-
-class CombineSentences(object):
-
-    def __init__(self, node_filename, topic_filename):
-        self.topic_filename = topic_filename
-        self.node_filename = node_filename
-
-    def __iter__(self):
-        with utils.smart_open(self.topic_filename) as f_topics, utils.smart_open(self.node_filename) as f_nodes:
-            for line_nodes, line_topics in zip(f_nodes, f_topics):
-                tokens_nodes = line_nodes.strip().split()
-                tokens_topics = line_topics.strip().split()
-                yield [(v, int(t)) for (v, t) in zip(tokens_nodes, tokens_topics)]

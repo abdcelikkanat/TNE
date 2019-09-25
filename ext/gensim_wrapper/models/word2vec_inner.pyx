@@ -99,10 +99,10 @@ cdef void fast_sentence_sg_hs(
 
     our_saxpy(&size, &word_locks[word2_index], work, &ONE, &syn0[row1], &ONE)
 
-cdef void fast_sentence_sg_hs_topic(
+cdef void fast_sentence_sg_hs_community(
     const np.uint32_t *word_point, const np.uint8_t *word_code, const int codelen,
-    REAL_t *syn0_topic, REAL_t *syn1, const int size,
-    const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work, REAL_t *word_locks_topic,
+    REAL_t *syn0_community, REAL_t *syn1, const int size,
+    const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work, REAL_t *word_locks_community,
     const int _compute_loss, REAL_t *_running_training_loss_param) nogil:
 
     cdef long long a, b
@@ -112,7 +112,7 @@ cdef void fast_sentence_sg_hs_topic(
     memset(work, 0, size * cython.sizeof(REAL_t))
     for b in range(codelen):
         row2 = word_point[b] * size
-        f_dot = our_dot(&size, &syn0_topic[row1], &ONE, &syn1[row2], &ONE)
+        f_dot = our_dot(&size, &syn0_community[row1], &ONE, &syn1[row2], &ONE)
         if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
             continue
         f = EXP_TABLE[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
@@ -127,9 +127,9 @@ cdef void fast_sentence_sg_hs_topic(
             _running_training_loss_param[0] = _running_training_loss_param[0] - lprob
 
         our_saxpy(&size, &g, &syn1[row2], &ONE, work, &ONE)
-        our_saxpy(&size, &g, &syn0_topic[row1], &ONE, &syn1[row2], &ONE)
+        our_saxpy(&size, &g, &syn0_community[row1], &ONE, &syn1[row2], &ONE)
 
-    our_saxpy(&size, &word_locks_topic[word2_index], work, &ONE, &syn0_topic[row1], &ONE)
+    our_saxpy(&size, &word_locks_community[word2_index], work, &ONE, &syn0_community[row1], &ONE)
 
 # to support random draws from negative-sampling cum_table
 cdef inline unsigned long long bisect_left(np.uint32_t *a, unsigned long long x, unsigned long long lo, unsigned long long hi) nogil:
@@ -197,11 +197,11 @@ cdef unsigned long long fast_sentence_sg_neg(
 
     return next_random
 
-cdef unsigned long long fast_sentence_sg_neg_topic(
+cdef unsigned long long fast_sentence_sg_neg_community(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len,
-    REAL_t *syn0_topic, REAL_t *syn1neg, const int size, const np.uint32_t word_index,
+    REAL_t *syn0_community, REAL_t *syn1neg, const int size, const np.uint32_t word_index,
     const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work,
-    unsigned long long next_random, REAL_t *word_locks_topic,
+    unsigned long long next_random, REAL_t *word_locks_community,
     const int _compute_loss, REAL_t *_running_training_loss_param) nogil:
 
     cdef long long a
@@ -225,7 +225,7 @@ cdef unsigned long long fast_sentence_sg_neg_topic(
             label = <REAL_t>0.0
 
         row2 = target_index * size
-        f_dot = our_dot(&size, &syn0_topic[row1], &ONE, &syn1neg[row2], &ONE)
+        f_dot = our_dot(&size, &syn0_community[row1], &ONE, &syn1neg[row2], &ONE)
         if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
             continue
         f = EXP_TABLE[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
@@ -239,9 +239,9 @@ cdef unsigned long long fast_sentence_sg_neg_topic(
             _running_training_loss_param[0] = _running_training_loss_param[0] - log_e_f_dot
 
         our_saxpy(&size, &g, &syn1neg[row2], &ONE, work, &ONE)
-        our_saxpy(&size, &g, &syn0_topic[row1], &ONE, &syn1neg[row2], &ONE)
+        our_saxpy(&size, &g, &syn0_community[row1], &ONE, &syn1neg[row2], &ONE)
 
-    our_saxpy(&size, &word_locks_topic[word2_index], work, &ONE, &syn0_topic[row1], &ONE)
+    our_saxpy(&size, &word_locks_community[word2_index], work, &ONE, &syn0_community[row1], &ONE)
 
     return next_random
 
@@ -477,7 +477,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     model.running_training_loss = _running_training_loss
     return effective_words
 
-def train_batch_sg_topic(model, sentences, alpha, _work, compute_loss):
+def train_batch_sg_community(model, sentences, alpha, _work, compute_loss):
     cdef int hs = model.hs
     cdef int negative = model.negative
     cdef int sample = (model.sample != 0)
@@ -485,15 +485,15 @@ def train_batch_sg_topic(model, sentences, alpha, _work, compute_loss):
     cdef int _compute_loss = (1 if compute_loss == True else 0)
     cdef REAL_t _running_training_loss = model.running_training_loss
 
-    cdef REAL_t *syn0_topic = <REAL_t *>(np.PyArray_DATA(model.wv.syn0_topic))
-    cdef REAL_t *word_locks_topic = <REAL_t *>(np.PyArray_DATA(model.syn0_lockf))
+    cdef REAL_t *syn0_community = <REAL_t *>(np.PyArray_DATA(model.wv.syn0_community))
+    cdef REAL_t *word_locks_community = <REAL_t *>(np.PyArray_DATA(model.syn0_lockf))
     cdef REAL_t *work
     cdef REAL_t _alpha = alpha
     cdef int size = model.layer1_size
 
     cdef int codelens[MAX_SENTENCE_LEN]
     cdef np.uint32_t indexes[MAX_SENTENCE_LEN]
-    cdef np.uint32_t indexes_topic[MAX_SENTENCE_LEN]
+    cdef np.uint32_t indexes_community[MAX_SENTENCE_LEN]
     cdef np.uint32_t reduced_windows[MAX_SENTENCE_LEN]
     cdef int sentence_idx[MAX_SENTENCE_LEN + 1]
     cdef int window = model.window
@@ -540,7 +540,7 @@ def train_batch_sg_topic(model, sentences, alpha, _work, compute_loss):
             if sample and word.sample_int < random_int32(&next_random):
                 continue
             indexes[effective_words] = word.index
-            indexes_topic[effective_words] = int(token[1])
+            indexes_community[effective_words] = int(token[1])
             if hs:
                 codelens[effective_words] = <int>len(word.code)
                 codes[effective_words] = <np.uint8_t *>np.PyArray_DATA(word.code)
@@ -578,9 +578,9 @@ def train_batch_sg_topic(model, sentences, alpha, _work, compute_loss):
                     if j == i:
                         continue
                     if hs:
-                        fast_sentence_sg_hs_topic(points[i], codes[i], codelens[i], syn0_topic, syn1, size, indexes_topic[j], _alpha, work, word_locks_topic, _compute_loss, &_running_training_loss)
+                        fast_sentence_sg_hs_community(points[i], codes[i], codelens[i], syn0_community, syn1, size, indexes_community[j], _alpha, work, word_locks_community, _compute_loss, &_running_training_loss)
                     if negative:
-                        next_random = fast_sentence_sg_neg_topic(negative, cum_table, cum_table_len, syn0_topic, syn1neg, size, indexes[i], indexes_topic[j], _alpha, work, next_random, word_locks_topic, _compute_loss, &_running_training_loss)
+                        next_random = fast_sentence_sg_neg_community(negative, cum_table, cum_table_len, syn0_community, syn1neg, size, indexes[i], indexes_community[j], _alpha, work, next_random, word_locks_community, _compute_loss, &_running_training_loss)
 
     model.running_training_loss = _running_training_loss
     return effective_words
