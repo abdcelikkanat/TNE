@@ -122,9 +122,9 @@ def process(args):
         tne.read_corpus_file(corpus_path=args.corpus)
         params = {'lda_alpha': args.lda_alpha, 'lda_beta': args.lda_beta, 'lda_iter_num': args.lda_iter_num}
         phi, id2node = tne.extract_community_labels(community_detection_method=args.comm_method, params=params)
-        tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.embedding_size,
+        tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.node_embedding_size,
                                   negative_samples_count=args.negative_samples, workers_count=args.workers)
-        tne.learn_community_embeddings()
+        tne.learn_community_embeddings(community_embedding_size=args.community_embedding_size)
         tne.write_node_embeddings("./node.embedding")
         tne.write_community_embeddings("./community.embedding")
         tne.write_embeddings(embedding_file_path=args.output, phi=phi, id2node=id2node)
@@ -160,8 +160,10 @@ def parse_arguments():
                                          help='The community detection method')
     learn_embeddings_parser.add_argument('--K', type=int, required=True,
                                          help='The number of latent communities')
-    learn_embeddings_parser.add_argument('--embedding_size', type=int, required=False, default=128,
-                                         help='The embedding size')
+    learn_embeddings_parser.add_argument('--node_embedding_size', type=int, required=False, default=128,
+                                         help='The node embedding size')
+    learn_embeddings_parser.add_argument('--community_embedding_size', type=int, required=False, default=128,
+                                         help='The community embedding size')
     learn_embeddings_parser.add_argument('--window_size', type=int, required=False, default=10,
                                          help='The window size')
     learn_embeddings_parser.add_argument('--negative_samples', type=int, required=False, default=5,
