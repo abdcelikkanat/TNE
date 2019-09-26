@@ -116,7 +116,11 @@ def process(args):
         rw = RandomWalks(g=g, strategy_name=args.strategy, N=args.N, L=args.L, opts=opts)
         rw.write_walks(args.output)
 
-    if args.task == "learn_embeddings":
+    if args.task == "learn_embeddings"
+
+        suffix = ""
+        if args.suffix != "":
+            suffix = "_" + args.suffix
 
         tne = TNE(K=args.K, suffix_for_files="deneme")
         tne.read_corpus_file(corpus_path=args.corpus)
@@ -124,10 +128,10 @@ def process(args):
         phi, id2node = tne.extract_community_labels(community_detection_method=args.comm_method, params=params)
         tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.embedding_size,
                                   negative_samples_count=args.negative_samples, workers_count=args.workers)
-        tne.write_node_embeddings("./node_prev.embedding")
+        tne.write_node_embeddings("./node_prev_{}.embedding".format(suffix))
         tne.learn_community_embeddings(args.community_embed_size)
-        tne.write_node_embeddings("./node.embedding")
-        tne.write_community_embeddings("./community.embedding")
+        tne.write_node_embeddings("./node{}.embedding".format(suffix))
+        tne.write_community_embeddings("./community{}.embedding".format(suffix))
         tne.write_embeddings(embedding_file_path=args.output, phi=phi, id2node=id2node)
 
 
@@ -180,6 +184,8 @@ def parse_arguments():
                                          help='The value of the parameter beta of LDA')
     learn_embeddings_parser.add_argument('--lda_iter_num', type=int, required=False, default=1000,
                                          help='The number of iterations for LDA algorithm, GibssLDA++')
+    learn_embeddings_parser.add_argument('--suffix', type=str, required=False, default="",
+                                         help='The suffix for file names')
 
     '''
     parser.add_argument('--graph_path', type=str, required=True,
