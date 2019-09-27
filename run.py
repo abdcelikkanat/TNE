@@ -3,6 +3,7 @@ from os.path import basename, splitext, join
 #from tne.tne2 import TNE
 from utils.utils import *
 import time
+import networkx as nx
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from random_walks import *
 from tne import *
@@ -116,7 +117,7 @@ def process(args):
         rw = RandomWalks(g=g, strategy_name=args.strategy, N=args.N, L=args.L, opts=opts)
         rw.write_walks(args.output)
 
-    if args.task == "learn_embeddings"
+    if args.task == "learn_embeddings":
 
         suffix = ""
         if args.suffix != "":
@@ -125,14 +126,14 @@ def process(args):
         tne = TNE(K=args.K, suffix_for_files="deneme")
         tne.read_corpus_file(corpus_path=args.corpus)
         params = {'lda_alpha': args.lda_alpha, 'lda_beta': args.lda_beta, 'lda_iter_num': args.lda_iter_num}
-        phi, id2node = tne.extract_community_labels(community_detection_method=args.comm_method, params=params)
+        phi, theta, id2node = tne.extract_community_labels(community_detection_method=args.comm_method, params=params)
         tne.learn_node_embeddings(window_size=args.window_size, embedding_size=args.embedding_size,
                                   negative_samples_count=args.negative_samples, workers_count=args.workers)
         tne.write_node_embeddings("./node_prev_{}.embedding".format(suffix))
         tne.learn_community_embeddings(args.community_embed_size)
         tne.write_node_embeddings("./node{}.embedding".format(suffix))
         tne.write_community_embeddings("./community{}.embedding".format(suffix))
-        tne.write_embeddings(embedding_file_path=args.output, phi=phi, id2node=id2node)
+        tne.write_embeddings(embedding_file_path=args.output, phi=phi, theta=theta, id2node=id2node)
 
 
 def parse_arguments():
