@@ -133,7 +133,8 @@ def process(args):
         tne.learn_community_embeddings(args.community_embed_size)
         tne.write_node_embeddings("./node{}.embedding".format(suffix))
         tne.write_community_embeddings("./community{}.embedding".format(suffix))
-        tne.write_embeddings(embedding_file_path=args.output, phi=phi, theta=theta, id2node=id2node)
+        tne.write_embeddings(embedding_file_path=args.output, phi=phi, theta=theta, id2node=id2node,
+                             concatenate_method=args.concatenate_method)
 
 
 def parse_arguments():
@@ -186,6 +187,8 @@ def parse_arguments():
     learn_embeddings_parser.add_argument('--lda_iter_num', type=int, required=False, default=1000,
                                          help='The number of iterations for LDA algorithm, GibssLDA++')
     learn_embeddings_parser.add_argument('--suffix', type=str, required=False, default="",
+                                         help='The suffix for file names')
+    learn_embeddings_parser.add_argument('--concatenate_method', type=str, required=False, default="max",
                                          help='The suffix for file names')
 
     '''
