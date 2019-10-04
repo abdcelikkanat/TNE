@@ -172,9 +172,6 @@ class TNE:
 
     def write_embeddings(self, embedding_file_path, phi, theta, id2node, concatenate_method):
 
-
-
-
         if concatenate_method == "max":
             id2comm = np.argmax(phi, axis=0)
             node2comm = {id2node[nodeId]: id2comm[nodeId] for nodeId in range(len(id2comm))}
@@ -184,7 +181,6 @@ class TNE:
                 for word, vocab in sorted(iteritems(self.model.wv.vocab), key=lambda item: -item[1].count):
                     row = np.concatenate((self.model.wv.syn0[vocab.index], self.model_community.wv.syn0_community[node2comm[word]]))
                     f.write("{} {}\n".format(word, ' '.join(str(val) for val in row)))
-
 
         if concatenate_method == "average":
 
