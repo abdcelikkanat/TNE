@@ -211,6 +211,15 @@ class TNE:
                     row = np.concatenate((self.model.wv.syn0[vocab.index], comm_vector))
                     f.write("{} {}\n".format(word, ' '.join(str(val) for val in row)))
 
+        if concatenate_method == "new":
+
+            print("New concatenation method")
+            with open(embedding_file_path, 'w') as f:
+                f.write("{} {}\n".format(len(self.model_community.wv.vocab), self.model.vector_size+self.model_community.vector_size))
+                for word, vocab in sorted(iteritems(self.model.wv.vocab), key=lambda item: -item[1].count):
+                    row = np.hstack((self.model.wv.syn0[vocab.index], self.model_community.syn1neg[vocab.index]))
+                    f.write("{} {}\n".format(word, ' '.join(str(val) for val in row)))
+
     def _create_temp_folder(self, folder_path):
 
         if not os.path.exists(folder_path):
