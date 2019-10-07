@@ -168,7 +168,13 @@ class TNE:
 
     def write_community_embeddings(self, embedding_file_path):
         # Save the topic embeddings
-        self.model_community.wv.save_word2vec_community_format(fname=embedding_file_path)
+        ##self.model_community.wv.save_word2vec_community_format(fname=embedding_file_path)
+
+        with open(embedding_file_path, 'w') as f:
+            f.write("{} {}\n".format(len(self.model_community.wv.vocab), self.model_community.vector_size))
+            for word, vocab in sorted(iteritems(self.model_community.wv.vocab), key=lambda item: -item[1].count):
+                row = self.model_community.syn1neg[vocab.index]
+                f.write("{} {}\n".format(word, ' '.join(str(val) for val in row)))
 
     def write_embeddings(self, embedding_file_path, phi, theta, id2node, concatenate_method):
 
