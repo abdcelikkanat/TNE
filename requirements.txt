@@ -1,8 +1,0 @@
-gensim==2.3.0
-networkx==2.1
-bayespy==0.5.17
-scikit-learn==0.19.1
-scipy==1.1.0
-hmmlearn==0.2.0
-python-louvain
-cython
