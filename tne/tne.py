@@ -282,6 +282,9 @@ class TNE:
         graph = nx.read_gml(params['graph_path'])
         #graph.remove_edges_from(nx.selfloop_edges(graph))
 
+        temp_folder = os.path.join(self.temp_folder_path, self.suffix_for_files)
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
         # Run BigClam algorithm over connected components
         self.K = 0
         node2comm = {}

@@ -672,7 +672,7 @@ int TAGMUtil::FindComsByAGM(const PUNGraph& Graph, const int InitComs, const int
     GPC.AddPlot(LRVScaled, gpwLinesPoints, "Sigmoid (scaled)");
     GPC.SetScale(gpsLog10X);
     GPC.SetTitle(PlotTitle);
-    GPC.SavePng(PltFPrx + ".l.png");
+    //GPC.SavePng(PltFPrx + ".l.png");
   }
   
   return NumComs;

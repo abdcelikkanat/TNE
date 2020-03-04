@@ -1,5 +1,5 @@
 gensim==2.3.0
 scipy==1.2.0
-cython
 python-louvain==0.13
 bayesian-hmm==0.0.3
+cython

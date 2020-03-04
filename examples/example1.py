@@ -10,8 +10,8 @@ from tne.tne import TNE
 
 # Set all parameters #
 params = {}
-params['comm_detection_method'] = "louvain"
-params['number_of_comms'] = 100
+params['comm_detection_method'] = "bigclam"
+params['number_of_comms'] = 10
 # Common parameters
 params['node_embedding_size'] = 96
 params['comm_embedding_size'] = 32
