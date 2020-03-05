@@ -14,7 +14,7 @@ from consts import *
 
 
 #_lda_path = os.path.join(os.path.dirname(__file__), "../ext/gibbslda/lda")
-_temp_folder_path = os.path.join(BASE_FOLDER, "../temp")
+_temp_folder_path = os.path.join(BASE_FOLDER, "temp")
 
 class TNE:
 
