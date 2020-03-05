@@ -18,11 +18,11 @@ pip install -r requirements.txt
 ```
 
 
-**Note:** _It may be required to compile the C extension of *gensim* package for a faster training process so you can run the following command:_
+**Note:** _It may be required to compile the C extension of *gensim* package for a faster training process so you can run the following command inside the *"ext/gensim_wrapper/models/"* folder:_
 ```
 python setup.py install
 ```
-_when you are inside the *"ext/gensim_wrapper/models/"* folder and copy the output **.so** file into this directory._
+_and you should copy the output **.so** file into the same directory._
 
 #### How to run
 An example to learn node representations with *Louvain* community detection method might be

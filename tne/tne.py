@@ -344,7 +344,7 @@ class TNE:
         hmm = bayesian_hmm.HDPHMM(self.walks, sticky=False)
         hmm.initialise()
 
-        n = 20
+        n = params['bayesianhmm_number_of_steps']
         results = hmm.mcmc(n=n, burn_in=n - 1, save_every=1, ncores=3, verbose=False)
 
         map_index = -1

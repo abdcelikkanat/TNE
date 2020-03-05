@@ -22,12 +22,8 @@ params['num_of_workers'] = 3
 params['lda_alpha'] = 50 / float(params['number_of_comms'])  # Default is 50 / K
 params['lda_beta'] = 0.1  # Default is 0.1
 params['lda_number_of_iters'] = 1000  # Default is 1000
-# Parameters for hmm
-params['hmm_p0'] = 0.3
-params['hmm_t0'] = 0.2
-params['hmm_e0'] = 0.1
-params['hmm_number_of_iters'] = 1000
-params['hmm_subset_size'] = 100
+# Parameters for BayesianHMM
+params['bayesianhmm_number_of_steps'] = 20
 
 
 corpus_paths = [os.path.join(BASE_FOLDER, "examples", "corpus", "karate.corpus"), ]
