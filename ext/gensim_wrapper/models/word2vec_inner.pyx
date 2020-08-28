@@ -606,7 +606,8 @@ def train_batch_sg_community(model, sentences, alpha, _work, compute_loss, _num_
                     #if hs:
                     #    fast_sentence_sg_hs_community(points[i], codes[i], codelens[i], syn0, syn0_community, syn1, size, indexes, indexes_community[j], _alpha, work, word_locks, word_locks_community, _compute_loss, &_running_training_loss)
                     if negative:
-                        next_random = fast_sentence_sg_neg_community(negative, cum_table, cum_table_len, syn0, syn1neg, syn1neg_community, size, indexes[i], indexes[j], indexes_community[i], _alpha, work, next_random, word_locks, word_locks_community, _compute_loss, &_running_training_loss, num_of_communities)
+                        #next_random = fast_sentence_sg_neg_community(negative, cum_table, cum_table_len, syn0, syn1neg, syn1neg_community, size, indexes[i], indexes[j], indexes_community[i], _alpha, work, next_random, word_locks, word_locks_community, _compute_loss, &_running_training_loss, num_of_communities)
+                        next_random = fast_sentence_sg_neg(negative, cum_table, cum_table_len, syn0, syn1neg, size, indexes[i], indexes[j], _alpha, work, next_random, word_locks, _compute_loss, &_running_training_loss)
 
     model.running_training_loss = _running_training_loss
     return effective_words
