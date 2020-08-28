@@ -253,6 +253,7 @@ class Word2VecWrapper(Word2Vec):
         self.vector_size = comm_embedding_size
         """Reset all projection weights to an initial (untrained) state, but keep the existing vocabulary."""
         logger.info("resetting layer weights")
+        self.wv.syn0 = empty((len(self.wv.vocab), self.vector_size), dtype=REAL)
         self.wv.syn0_community = empty((number_of_communities, self.vector_size), dtype=REAL)
         # randomize weights vector by vector, rather than materializing a huge random matrix in RAM at once
         #for i in xrange(len(self.wv.vocab)):
@@ -266,6 +267,8 @@ class Word2VecWrapper(Word2Vec):
             self.syn1neg_community = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
         self.wv.syn0norm_community = None
         self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
+        self.wv.syn0norm = None
+        self.syn0_lockf = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
 
     def initialize_word_vectors(self):
         self.wv = KeyedVectorsWrapper()
