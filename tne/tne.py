@@ -90,7 +90,7 @@ class TNE:
 
         # Learn node embeddings
         initial_time = time.time()
-        self.model = Word2VecWrapper(sentences=self.walks,
+        self.model = Word2VecWrapper(#sentences=self.walks,
                                      size=self.node_embedding_size,
                                      window=self.window_size,
                                      sg=self.sg, hs=self.hs,
@@ -99,7 +99,7 @@ class TNE:
                                      alpha=0.0025,
                                      min_alpha=0.00001,
                                      )
-        #self.model.build_vocab(sentences=self.walks)
+        self.model.build_vocab(sentences=self.walks)
         print("--> 1. Node embeddings have been learned in {} secs.".format(time.time() - initial_time))
 
         # Learn community labels
@@ -110,9 +110,9 @@ class TNE:
         # Learn community embeddings
         initial_time = time.time()
         # Construct the tuples (word, community) with each node in the corpus and its corresponding community assignment
-        #combined_walks = CombineSentences(node_walks=self.walks, community_walks=self.community_walks)
-        self.model.train(sentences=self.walks, total_examples=self.model.corpus_count, epochs=self.model.iter)
-        #self.model.train_community(self.K, combined_walks, self.comm_embedding_size)
+        combined_walks = CombineSentences(node_walks=self.walks, community_walks=self.community_walks)
+        #self.model.train(sentences=self.walks, total_examples=self.model.corpus_count, epochs=self.model.iter)
+        self.model.train_community(self.K, combined_walks, self.comm_embedding_size, total_examples=self.model.corpus_count, epochs=self.model.iter)
         print("--> 3. Community embeddings have been learned in {} secs.".format(time.time() - initial_time))
 
     def extract_community_labels(self):
