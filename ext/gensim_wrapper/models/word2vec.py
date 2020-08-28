@@ -34,7 +34,7 @@ class Word2VecWrapper(Word2Vec):
         total_examples = self.corpus_count
         epochs = self.iter
         self.reset_community_weights(number_of_communities, comm_embedding_size)
-        self.negative=10
+        self.negative = 10
 
         if (self.model_trimmed_post_training):
             raise RuntimeError("Parameters for training were discarded using model_trimmed_post_training method")
@@ -93,7 +93,7 @@ class Word2VecWrapper(Word2Vec):
                     progress_queue.put(None)
                     break  # no more jobs => quit this worker
                 sentences, alpha = job
-                tally, raw_tally = self._do_train_community_job(sentences, alpha, (work, neu1))
+                tally, raw_tally = self._do_train_community_job(sentences, alpha, (work, neu1) ,number_of_communities)
                 #tally, raw_tally = self._do_train_job(sentences, alpha, (work, neu1))
                 progress_queue.put((len(sentences), tally, raw_tally))  # report back progress
                 jobs_processed += 1
@@ -234,7 +234,7 @@ class Word2VecWrapper(Word2Vec):
         self.clear_sims()
         return trained_word_count
 
-    def _do_train_community_job(self, sentences, alpha, inits):
+    def _do_train_community_job(self, sentences, alpha, inits, number_of_communities):
         """
         Train a single batch of sentences. Return 2-tuple `(effective word count after
         ignoring unknown words and sentence length trimming, total word count)`.
@@ -242,7 +242,7 @@ class Word2VecWrapper(Word2Vec):
         work, neu1 = inits
         tally = 0
         if self.sg:
-            tally += train_batch_sg_community(self, sentences, alpha, work, self.compute_loss)
+            tally += train_batch_sg_community(self, sentences, alpha, work, self.compute_loss, number_of_communities)
         else:
             raise ValueError("It has not been implemented for CBOW!")
             #tally += train_batch_cbow_topic(self, sentences, alpha, work, neu1, self.compute_loss)
@@ -263,6 +263,7 @@ class Word2VecWrapper(Word2Vec):
             self.syn1 = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
         if self.negative:
             self.syn1neg = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
+            self.syn1neg_community = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
         self.wv.syn0norm_community = None
         self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
 

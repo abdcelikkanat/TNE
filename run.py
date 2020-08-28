@@ -32,7 +32,7 @@ def process(args):
     tne = TNE(walks=walks, params=params, suffix=args.suffix)
     # Save the embedding file
     tne.write_embeddings(embedding_file_path=args.emb, concatenate_method="average")
-
+    tne.write_node_embeddings(file_path="./node.embedding")
 
 def parse_arguments():
     parser = ArgumentParser(description="TNE: Topical Node Embeddings",

@@ -90,7 +90,8 @@ class TNE:
 
         # Learn node embeddings
         initial_time = time.time()
-        self.model = Word2VecWrapper(sentences=self.walks,
+        self.model = Word2VecWrapper(# sentences=self.walks,
+
                                      size=self.node_embedding_size,
                                      window=self.window_size,
                                      sg=self.sg, hs=self.hs,
@@ -99,6 +100,7 @@ class TNE:
                                      alpha=0.0025,
                                      min_alpha=0.00001,
                                      )
+        self.model.build_vocab(sentences=self.walks)
         print("--> 1. Node embeddings have been learned in {} secs.".format(time.time() - initial_time))
 
         # Learn community labels
