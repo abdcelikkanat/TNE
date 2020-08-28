@@ -90,7 +90,7 @@ class TNE:
 
         # Learn node embeddings
         initial_time = time.time()
-        self.model = Word2VecWrapper(#sentences=self.walks,
+        self.model = Word2VecWrapper(sentences=self.walks,
                                      size=self.node_embedding_size,
                                      window=self.window_size,
                                      sg=self.sg, hs=self.hs,
