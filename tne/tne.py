@@ -112,7 +112,7 @@ class TNE:
         # Construct the tuples (word, community) with each node in the corpus and its corresponding community assignment
         combined_walks = CombineSentences(node_walks=self.walks, community_walks=self.community_walks)
         #self.model.train(sentences=self.walks, total_examples=self.model.corpus_count, epochs=self.model.iter)
-        self.model.train_community(self.K, combined_walks, self.comm_embedding_size, total_examples=self.model.corpus_count, epochs=self.model.iter)
+        self.model.train_community(self.K, combined_walks, self.comm_embedding_size)
         print("--> 3. Community embeddings have been learned in {} secs.".format(time.time() - initial_time))
 
     def extract_community_labels(self):

@@ -33,7 +33,7 @@ class Word2VecWrapper(Word2Vec):
 
         total_examples = self.corpus_count
         epochs = self.iter
-        self.reset_community_weights(number_of_communities, comm_embedding_size)
+        #self.reset_community_weights(number_of_communities, comm_embedding_size)
         self.negative = 10
 
         if (self.model_trimmed_post_training):
@@ -260,6 +260,7 @@ class Word2VecWrapper(Word2Vec):
         for i in xrange(number_of_communities):
             # construct deterministic seed from word AND seed argument
             self.wv.syn0_community[i] = self.seeded_vector(str(i) + str(self.seed))
+            self.wv.syn0[i] = self.seeded_vector(str(i) + str(self.seed))
         if self.hs:
             self.syn1 = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
         if self.negative:
