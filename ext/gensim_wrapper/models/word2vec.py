@@ -33,7 +33,7 @@ class Word2VecWrapper(Word2Vec):
 
         total_examples = self.corpus_count
         epochs = self.iter
-        #self.reset_community_weights(number_of_communities, comm_embedding_size)
+        self.reset_community_weights(number_of_communities, comm_embedding_size)
         self.negative = 10
 
         if (self.model_trimmed_post_training):
@@ -249,8 +249,8 @@ class Word2VecWrapper(Word2Vec):
         return tally, self._raw_word_count(sentences)
 
     def reset_community_weights(self, number_of_communities, comm_embedding_size):
-        self.layer1_size = comm_embedding_size
-        self.vector_size = comm_embedding_size
+        #self.layer1_size = comm_embedding_size
+        #self.vector_size = comm_embedding_size
         """Reset all projection weights to an initial (untrained) state, but keep the existing vocabulary."""
         logger.info("resetting layer weights")
         self.wv.syn0 = empty((len(self.wv.vocab), self.vector_size), dtype=REAL)
