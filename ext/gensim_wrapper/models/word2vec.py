@@ -269,7 +269,7 @@ class Word2VecWrapper(Word2Vec):
         self.wv.syn0norm_community = None
         self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
         self.wv.syn0norm = None
-        self.syn0_lockf = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
+        self.syn0_lockf = ones(len(self.wv.vocab), dtype=REAL)
 
     def initialize_word_vectors(self):
         self.wv = KeyedVectorsWrapper()
