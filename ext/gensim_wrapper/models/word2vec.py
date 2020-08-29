@@ -260,12 +260,15 @@ class Word2VecWrapper(Word2Vec):
         for i in xrange(number_of_communities):
             # construct deterministic seed from word AND seed argument
             self.wv.syn0_community[i] = self.seeded_vector(str(i) + str(self.seed))
-            self.wv.syn0[i] = self.seeded_vector(str(i) + str(self.seed))
+        for i in xrange(len(self.wv.vocab)):
+            # construct deterministic seed from word AND seed argument
+            self.wv.syn0[i] = self.seeded_vector(self.wv.index2word[i] + str(self.seed))
         if self.hs:
             self.syn1 = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
         if self.negative:
             self.syn1neg = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
             self.syn1neg_community = zeros((len(self.wv.vocab), self.layer1_size), dtype=REAL)
+            print("Negative: {}".format(self.negative))
         self.wv.syn0norm_community = None
         self.syn0_lockf_community = ones(number_of_communities, dtype=REAL)  # zeros suppress learning
         self.wv.syn0norm = None
