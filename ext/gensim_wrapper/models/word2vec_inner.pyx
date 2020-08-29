@@ -241,7 +241,7 @@ cdef unsigned long long fast_sentence_sg_neg_community(
 
         f_dot = our_dot(&size, &syn0[row1], &ONE, &syn1neg[row2], &ONE)
         f_dot_community = our_dot(&size, &syn0[row1], &ONE, &syn1neg_community[row2_community], &ONE)
-        f_dot = 1.0*f_dot + 1.0*f_dot_community
+        f_dot = 0.5*f_dot + 0.5*f_dot_community
 
         if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
             continue
