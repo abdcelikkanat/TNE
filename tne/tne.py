@@ -381,6 +381,53 @@ class TNE:
 
         return phi, theta, id2node
 
+    def _bayesianhdphmm(self, params):
+
+        if 'graph_path' not in params:
+            raise ValueError("For {} algorithm, the graph path is needed!".format(self.comm_detection_method))
+        graph = nx.read_gml(params['graph_path'])
+
+        # initialise object with overestimate of true number of latent states
+        hmm = bayesian_hmm.HDPHMM(self.walks, sticky=False)
+        hmm.initialise()
+
+        n = params['bayesianhmm_number_of_steps']
+        results = hmm.mcmc(n=n, burn_in=n - 1, save_every=1, ncores=3, verbose=False)
+
+        map_index = -1
+        parameters_map = results['parameters'][map_index]
+        commlabel2comm = {}
+        comm = 0
+        for commlabel in parameters_map['p_initial'].keys():
+            if commlabel is not None:
+                commlabel2comm[commlabel] = comm
+                comm += 1
+
+        self.K = len(commlabel2comm.keys())
+
+        parameters_map = results['parameters'][map_index]
+        emission_prob = parameters_map['p_emission']
+
+        phi = np.zeros(shape=(self.K, graph.number_of_nodes()), dtype=np.float)
+        for node in range(graph.number_of_nodes()):
+            for k in commlabel2comm.keys():
+                phi[commlabel2comm[k], node] = emission_prob[k][str(node)]
+        phi = (phi.T / np.sum(phi, 1)).T
+
+        theta = None
+
+        id2node = {int(node): node for node in graph.nodes()}
+
+        chains = hmm.chains
+        self.community_walks = []
+        for i in range(len(self.walks)):
+            community_walk = []
+            for w in chains[i].latent_sequence:
+                community_walk.append(commlabel2comm[w])
+            self.community_walks.append(community_walk)
+
+        return phi, theta, id2node
+
     '''
     def _hdp(self, params):
 
