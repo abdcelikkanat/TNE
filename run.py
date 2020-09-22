@@ -26,6 +26,10 @@ def process(args):
     # Set the graph path, it might be required by some methods.
     params['graph_path'] = args.graph_path
 
+    params['alpha'] = args.alpha
+    params['min_alpha'] = args.min_alpha
+    params['iter'] = args.iter
+
     # Read the walks
     walks = read_corpus_file(args.corpus)
     # Call the main class
@@ -68,6 +72,11 @@ def parse_arguments():
                         help='The number of steps for Bayesian HMM model.')
     parser.add_argument('--suffix', type=str, required=False, default="",
                                          help='The suffix for file names.')
+
+    parser.add_argument('--alpha', type=float, required=False, default=0.0025, help='Learning parameter, starting alpha ')
+    parser.add_argument('--min_alpha', type=float, required=False, default=0.00001, help='Learning parameter, min alpha ')
+    parser.add_argument('--iter', type=int, required=False, default=8, help='iter ')
+
 
     return parser.parse_args()
 

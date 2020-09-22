@@ -64,6 +64,10 @@ class TNE:
             raise ValueError("'num_of_workers' parameter not exists")
         self.workers = params['num_of_workers']
 
+        self.alpha = params['alpha']
+        self.min_alpha=params['min_alpha']
+        self.iter=params['iter']
+
         # Create a folder for temporary files
         self.temp_folder_path = os.path.join(_temp_folder_path, suffix)
         self._create_temp_folder(self.temp_folder_path)
@@ -96,8 +100,9 @@ class TNE:
                                      sg=self.sg, hs=self.hs,
                                      workers=self.workers,
                                      min_count=0,
-                                     alpha=0.0025,
-                                     min_alpha=0.00001,
+                                     alpha=self.alpha,
+                                     min_alpha=self.min_alpha,
+                                     iter=self.iter,
                                      )
         print("--> 1. Node embeddings have been learned in {} secs.".format(time.time() - initial_time))
 
